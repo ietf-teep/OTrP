@@ -96,11 +96,9 @@
     <workgroup>TEEP</workgroup>
     <keyword>Trusted Execution Environment</keyword>
     <abstract>
-      <t>This document specifies the Open Trust Protocol (OTrP), a
-      protocol that follows the Trust Execution Environment Provisioning (TEEP)
-      architecture and provides a message protocol that provisions and manages
-      Trusted Applications into a device with a Trusted Execution Environment
-      (TEE).
+      <t>This document specifies the Open Trust Protocol (OTrP) version 2, a
+      protocol that provisions and installs, updates, and deletes Trusted Applications 
+      in a device with a Trusted Execution Environment (TEE).
       </t>
     </abstract>
   </front>
@@ -110,42 +108,22 @@
       <t>The Trusted Execution Environment (TEE) concept has been designed to
       separate a regular operating system, also referred as a Rich Execution
       Environment (REE), from security-sensitive applications. In an TEE
-      ecosystem, different device vendors may use different TEE implementations.
-      Different application providers or device administrators may choose to
-      use different TAM providers. There calls for an interoperable
-      protocol for managing TAs running in different TEEs of various devices
-      is needed.
+      ecosystem, different device vendors may use different operating systems in the 
+      REE and may use different types of TEEs. When application providers or 
+      device administrators use Trusted Application Managers (TAMs) to install, update, 
+      and delete Trusted Applications (TAs) on a wide range of devices with potentially 
+      different TEEs then an interoperability need arises.</t>
+      
+      <t>This document specifies version 2 of the Open Trust Protocol (OTrP), a protocol 
+      for communicating between an OTrP server (as part of a TAM)  and an OTrP client 
+      (which is a client-side component running in the REE).
       </t>
 
       <t>The Trusted Execution Environment Provisioning (TEEP) architecture
       document <xref target="I-D.ietf-teep-architecture"/> has set to provide a design guidance
-      for such an interoperable protocol. This document specifies an Open Trust
-      Protocol (OTrP) that follows the architecture guidance.
+      for such an interoperable protocol.
       </t>
 
-      <t>OTrP defines a mutual trust message protocol between a TAM and a TEE and
-      relies on IETF-defined end-to-end security
-      mechanisms, namely JSON Web Encryption (JWE), JSON Web Signature (JWS),
-      and JSON Web Key (JWK). Other message encoding methods may be supported.</t>
-
-      <t>This specification defines message payloads exchanged between devices
-        and a TAM. The messages are designed in anticipation of the use of the
-        most common transport methods such as HTTPS.
-      </t>
-
-      <t>Each TA binary and configuration data can be from either of two sources:
-        <list hangIndent="2" style="numbers">
-          <t>A TAM supplies the signed and encrypted TA binary and any
-             required configuration data</t>
-          <t>A Client Application supplies the TA binary</t>
-        </list>
-      </t>
-      <t>
-        This specification considers the first case where TA binary and
-        configuration data are encrypted by recipient's public key that
-        TAM has to be involved. The second case will also be addressed
-        separately.
-      </t>
     </section>
 
     <section title="Requirements Language">
@@ -155,49 +133,9 @@
         document are to be interpreted as described in
         <xref target="RFC2119"/>.
       </t>
-    </section>
-
-    <section anchor="terms" title="Terminology">
-      <section anchor="Subsection-Definitions" title="Definitions">
-        <t>The definitions provided below are defined as used in this
-          document. All the terms defined in the TEEP Architecture document
-          <xref target="I-D.ietf-teep-architecture" /> will be used, which are not repeated
-          in this document.
-        </t>
-
-        <t>
-          <list hangIndent="4" style="hanging">
-            <t hangText="OTrP Broker:">
-              It is the Broker as defined in the TEEP Architecture document
-              <xref target="I-D.ietf-teep-architecture" />.
-            </t>
-          </list>
-        </t>
-      </section>
-
-      <section title="Abbreviations">
-        <t>
-          <list hangIndent="8" style="hanging">
-            <t hangText="CA">Certificate Authority</t>
-
-            <t hangText="OTrP">Open Trust Protocol</t>
-
-            <t hangText="REE">Rich Execution Environment</t>
-
-            <t hangText="SD">Security Domain</t>
-
-            <t hangText="SP">Service Provider</t>
-
-            <t hangText="TA">Trusted Application</t>
-
-            <t hangText="TEE">Trusted Execution Environment</t>
-
-            <t hangText="TFW">Trusted Firmware</t>
-
-            <t hangText="TAM">Trusted Application Manager</t>
-          </list>
-        </t>
-      </section>
+      <t>This specification re-uses the terminology defined in 
+      <xref target="I-D.ietf-teep-architecture" />.</t>
+      
     </section>
 
     <section anchor="model" title="OTrP Entities and Trust Model">
