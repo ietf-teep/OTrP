@@ -49,35 +49,8 @@
       </address>
     </author>
 
-    <author fullname="Nick Cook" initials="N." surname="Cook">
-      <organization>ARM Ltd.</organization>
-      <address>
-        <postal>
-          <street>110 Fulbourn Rd</street>
-          <city>Cambridge</city>
-          <region>CB1</region>
-          <code>9NJ</code>
-          <country>Great Britain</country>
-        </postal>
-        <email>nicholas.cook@arm.com</email>
-      </address>
-    </author>
-
-    <author fullname="Minho Yoo" initials="M." surname="Yoo">
-      <organization>IoTrust</organization>
-      <address>
-        <postal>
-          <street>Suite 501, Gasanbusiness Center,165, Gasan digital1-ro</street>
-          <city>Seoul</city>
-          <code>08503</code>
-          <country>Korea</country>
-        </postal>
-        <email>minho.yoo@iotrust.kr</email>
-      </address>
-    </author>
-
     <author fullname="Hannes Tschofenig" initials="H." surname="Tschofenig">
-      <organization>ARM Ltd.</organization>
+      <organization>Arm Ltd.</organization>
       <address>
         <postal>
           <street>110 Fulbourn Rd</street>
@@ -90,7 +63,35 @@
       </address>
     </author>
 
-    <date month="May" year="2019" />
+        <author fullname="David Wheeler" initials="D." surname="Wheeler">
+      <organization>Intel</organization>
+      <address>
+        <postal>
+          <street></street>
+          <city></city>
+          <region></region>
+          <code></code>
+          <country>US</country>
+        </postal>
+        <email>david.m.wheeler@intel.com</email>
+      </address>
+    </author>
+       
+    <author fullname="David Thaler" initials="D." surname="Thaler">
+      <organization>Microsoft</organization>
+      <address>
+        <postal>
+          <street></street>
+          <city></city>
+          <code></code>
+          <country>US</country>
+        </postal>
+        <email>dthaler@microsoft.com</email>
+      </address>
+    </author>
+    
+    <date month="July" year="2019" />
+    
     <area>Security</area>
     <workgroup>TEEP</workgroup>
     <keyword>Trusted Execution Environment</keyword>
@@ -5404,7 +5405,11 @@ OTrP    |    -- TEE                           TAM-------
       </section>
     </section>
 
-    <section anchor="Contributors" title="Contributors">
+   <section anchor="Contributors" title="Contributors">
+    
+    <t>We would like to thank the following individuals for their contributions to an earlier version
+    of this specification.</t> 
+    
         <figure>
           <artwork><![CDATA[
 - Brian Witten
@@ -5414,8 +5419,17 @@ OTrP    |    -- TEE                           TAM-------
 - Tyler Kim
   Solacia
   tylerkim@iotrust.kr
+
+- Nick Cook
+  Arm Ltd.
+  nicholas.cook@arm.com
+  
+- Minho Yoo  
+  IoTrust
+  minho.yoo@iotrust.kr
          ]]></artwork>
         </figure>
+
     </section>
   </back>
 </rfc>
