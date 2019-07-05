@@ -7,6 +7,18 @@
 <!ENTITY RFC7516 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7516.xml">
 <!ENTITY RFC7517 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7517.xml">
 <!ENTITY RFC7518 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7518.xml">
+
+<!ENTITY RFC8152 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8152.xml">
+<!ENTITY RFC3629 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3629.xml">
+<!ENTITY RFC5198 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5198.xml">
+<!ENTITY RFC7049 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7049.xml">
+<!ENTITY RFC7518 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7518.xml">
+<!ENTITY RFC8126 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8126.xml">
+
+
+<!ENTITY I-D.ietf-rats-eat SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.ietf-rats-eat.xml">
+<!ENTITY I-D.ietf-teep-architecture SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.ietf-teep-architecture.xml">
+<!ENTITY I-D.ietf-cbor-cddl SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.ietf-cbor-cddl.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <?rfc strict="yes" ?>
@@ -237,14 +249,21 @@ otherwise.
 Outer_Wrapper = {
     msg-authenc-wrapper         => bstr .cbor
                                    Msg_AuthEnc_Wrapper / nil,
-    otrp-message                => (QueryRequest / QueryResponse / TrustedAppInstall / 
-                                    TrustedAppDelete / Error / Success ), 
+    otrp-message                => (QueryRequest / 
+                                    QueryResponse / 
+                                    TrustedAppInstall / 
+                                    TrustedAppDelete / 
+                                    Error / 
+                                    Success ), 
 }
 
 msg-authenc-wrapper = 1
 otrp-message = 2
 
-Msg_AuthEnc_Wrapper = [ * (COSE_Mac_Tagged / COSE_Sign_Tagged / COSE_Mac0_Tagged / COSE_Sign1_Tagged)]
+Msg_AuthEnc_Wrapper = [ * (COSE_Mac_Tagged / 
+                           COSE_Sign_Tagged / 
+                           COSE_Mac0_Tagged / 
+                           COSE_Sign1_Tagged)]
                        ]]></artwork>
           </figure>
      </t> 
@@ -280,7 +299,8 @@ QueryRequest = (
           </t> 
           
           <t>A QueryRequest message is signed by the TAM and has the following fields: 
-<list style=hanging"> 
+          
+<list style="hanging"> 
 
 <t hangText="TYPE">TYPE = 1 corresponds to a QueryRequest message sent from the TAM to the OTrP Agent.</t> 
 
@@ -325,7 +345,7 @@ QueryResponse = (
 </t>
           <t>The QueryResponse message is signed and encrypted by the OTrP Agent and returned to the TAM. It has the following fields:      
 
-          <list style=hanging"> 
+          <list style="hanging"> 
           
 <t hangText="TYPE">TYPE = 2 corresponds to a QueryResponse message sent from the OTrP Agent to the TAM.</t>
 
@@ -358,7 +378,7 @@ TrustedAppInstall = (
           
 <t>The TrustedAppInstall message is MACed and encrypted by the TAM and has the following fields:      
 
-          <list style=hanging"> 
+          <list style="hanging"> 
           
 <t hangText="TYPE">TYPE = 3 corresponds to a TrustedAppInstall message sent from the TAM to the OTrP Agent. In case of successful processing, an Success 
 message is returned by the OTrP Agent. In case of an error, an Error message is returned. Note that the TrustedAppInstall message
@@ -387,7 +407,7 @@ TrustedAppDelete  = (
           
 <t>The TrustedAppDelete message is MACed and encrypted by the TAM and has the following fields:      
 
-          <list style=hanging"> 
+          <list style="hanging"> 
           
 <t hangText="TYPE">TYPE = 4 corresponds to a TrustedAppDelete message sent from the TAM to the OTrP Agent. In case of successful processing, an Success 
 message is returned by the OTrP Agent. In case of an error, an Error message is returned.</t> 
@@ -415,14 +435,16 @@ Success = (
           
 <t>The Success message is MACed and encrypted by the OTrP Agent and has the following fields:      
 
-          <list style=hanging"> 
+          <list style="hanging"> 
           
 <t hangText="TYPE">TYPE = 5 corresponds to a Error message sent from the OTrP Agent to the TAM.</t> 
 
 <t hangText="TOKEN">The value in the TOKEN field is used to match requests to responses.</t>
 
-<t hangText="MSG">The MSG field contains optional diagnostics information encoded in UTF-8 <xref target="RFC3629"/> returned by the OTrP Agent.
+<t hangText="MSG">The MSG field contains optional diagnostics information encoded in UTF-8 <xref target="RFC3629"/> returned by the OTrP Agent.</t>
 
+</list> 
+</t> 
 
 <t>
  <figure>
@@ -443,7 +465,7 @@ Error = (
                   
 <t>If possible, the Error message is MACed and encrypted by the OTrP Agent. Unprotected Error messages MUST be handled with care by the TAM due to possible downgrading attacks. It has the following fields:      
 
-          <list style=hanging"> 
+          <list style="hanging"> 
           
 <t hangText="TYPE">TYPE = 6 corresponds to a Error message sent from the OTrP Agent to the TAM.</t> 
 
@@ -461,7 +483,6 @@ Error = (
 
 <t>This specification defines the following initial error messages. Additional error code can be registered with IANA. 
 
-<t>
 <list style="hanging"> 
 
 <t hangText="ERR_ILLEGAL_PARAMETER">  The OTrP Agent sends this error message when 
@@ -529,6 +550,99 @@ Error = (
 </section> <!-- Detailed Messages Specification -->
 
 
+
+    <section anchor="security" title="Security Consideration">
+      
+      <t>This section summarizes the security considerations discussed in this 
+      specification: 
+      
+      <list style="hanging"> 
+      
+      <t hangText="Cryptographic Algorithms">
+        This specification relies on the cryptographic algorithms provided 
+        by the security wrappers JOSE and COSE, respectively. A companion document 
+        makes algorithm recommendations but this document is written in an algorithm-agnostic way.
+        OTrP messages between the TAM and the OTrP Agent are protected using JWS and JWE (for 
+        JSON-encoded messages) and COSE (for CBOR-encoded messages). Public key based authentication 
+        is used to by the OTrP Agent to authenticate the TAM and vice versa.</t>
+
+        
+      <t hangText="Attestation"> 
+      
+        A TAM may rely on the attestation information provided by the OTrP Agent and the 
+        Entity Attestation Token is re-used to convey this information. To sign the Entity Attestation 
+        Token it is necessary for the device to possess a public key (usually in the form of a certificate) 
+        along with the corresponding private key. Depending on the properties of the attestation mechanism it is possible 
+        to uniquely identify a device based on information in the attestation 
+        information or in the certificate used to sign the attestation token. 
+        This uniqueness may raise privacy concerns. To lower the privacy implications the
+        OTrP Agent MUST present its attestation information only to an 
+        authenticated and authorized TAM.</t>
+        
+        
+      <t hangText="TA Binaries">
+        TA binaries are provided by the SP.It is the responsibility
+        of the TAM to relay only verified TAs from authorized SPs.
+        Delivery of that TA to the OTrP Agent is then the responsibility 
+        of the TAM and the OTrP Broker, using the security mechanisms provided by the OTrP.
+        To protect the TA binary the SUIT manifest is re-used and it offers a varity of 
+        security features, including digitial signatures and symmetric encryption. 
+        </t>
+
+      <t hangText="Personalization Data">      
+        An SP or a TAM can supply personalization data along with a TA. 
+        This data is also protected by a SUIT manifest. 
+        The personalization data may be itself is (or can be) opaque to the TAM.
+      </t>
+
+      <t hangText="OTrP Broker">
+        OTrP relies on the OTrP Broker to relay messages between the TAM and the OTrP Agent. 
+        When the OTrP Broker is compromised it can drop, relay, and replay messages but it cannot 
+        modify those messages. A compromised OTrP Broker could reorder TAM messages to install an old 
+        version of a TA. Information in the manifest ensures that the OTrP Agents are 
+        protected against such downgrading attacks.</t>
+
+      <t hangText="CA Compromise"> 
+       The QueryRequest message from a TAM to the OTrP Agent may include
+        OCSP stapling data for the TAM's signer certificate and for
+        intermediate CA certificates up to the root certificate so that the OTrP Agent
+        can verify the certificate's revocation status. <vspace blankLines="1"/>
+
+        A certificate revocation status check on a TA signer certificate is
+        OPTIONAL by an OTrP Agent. A TAM is responsible for vetting a TA and 
+        before distributing them to OTrP Agents. The OTrP Agents will
+        trust a TA signer certificate's validation status done by a TAM. </t>
+ 
+      <t hangText="CA Compromise"> 
+
+        The CA issuing certificates to a TAM or an SP may get compromised. 
+        A compromised
+        intermediate CA certificates can be detected by an OTrP Agent by using
+        OCSP information, assuming the revocation information is available. 
+        Additionally, it is RECOMMENDED to provide a way to update the trust 
+        anchor store used by the device, for example using a firmware update 
+        mechanism. <vspace blankLines="1"/>
+        
+        If the CA issuing certificates to devices gets compromised then 
+        these devices might be rejected by a TAM, if revocation is available to the 
+        TAM.
+        </t>
+
+        <t hangText="Compromised TAM">
+        The OTrP Agent SHOULD use OCSP information to verify the validity of the TAM-provided 
+        certificate (as well as the validity of intermediate CA certificates). The integrity 
+        and the accuracy of the clock within the TEE
+        determines the ability to determine an expired or revoked certificate since OCSP 
+        stapling includes signature
+        generation time, certificate validity dates are compared to the current
+        time.</t>
+
+        </list> 
+        </t> 
+
+    </section> <!-- Security Consideration -->
+
+  
     <section anchor="IANA" title="IANA Considerations">
       <t>There are two IANA requests: a media type and list of error codes.</t>
 
@@ -631,99 +745,6 @@ Error = (
 
     </section> <!-- IANA Considerations -->
 
-    <section anchor="security" title="Security Consideration">
-      
-      <t>This section summarizes the security considerations discussed in this 
-      specification: 
-      
-      <list style="hanging"> 
-      
-      <t hangText="Cryptographic Algorithms">
-        This specification relies on the cryptographic algorithms provided 
-        by the security wrappers JOSE and COSE, respectively. A companion document 
-        makes algorithm recommendations but this document is written in an algorithm-agnostic way.
-        OTrP messages between the TAM and the OTrP Agent are protected using JWS and JWE (for 
-        JSON-encoded messages) and COSE (for CBOR-encoded messages). Public key based authentication 
-        is used to by the OTrP Agent to authenticate the TAM and vice versa.</t>
-
-        
-      <t hangText="Attestation"> 
-      
-        A TAM may rely on the attestation information provided by the OTrP Agent and the 
-        Entity Attestation Token is re-used to convey this information. To sign the Entity Attestation 
-        Token it is necessary for the device to possess a public key (usually in the form of a certificate) 
-        along with the corresponding private key. Depending on the properties of the attestation mechanism it is possible 
-        to uniquely identify a device based on information in the attestation 
-        information or in the certificate used to sign the attestation token. 
-        This uniqueness may raise privacy concerns. To lower the privacy implications the
-        OTrP Agent MUST present its attestation information only to an 
-        authenticated and authorized TAM.</t>
-        
-        
-      <t hangText="TA Binaries">
-        TA binaries are provided by the SP.It is the responsibility
-        of the TAM to relay only verified TAs from authorized SPs.
-        Delivery of that TA to the OTrP Agent is then the responsibility 
-        of the TAM and the OTrP Broker, using the security mechanisms provided by the OTrP.
-        To protect the TA binary the SUIT manifest is re-used and it offers a varity of 
-        security features, including digitial signatures and symmetric encryption. 
-        </t>
-
-      <t hangText="Personalization Data">      
-        An SP or a TAM can supply personalization data along with a TA. 
-        This data is also protected by a SUIT manifest. 
-        The personalization data may be itself is (or can be) opaque to the TAM.
-      </t>
-
-      <t hangText="OTrP Broker">
-        OTrP relies on the OTrP Broker to relay messages between the TAM and the OTrP Agent. 
-        When the OTrP Broker is compromised it can drop, relay, and replay messages but it cannot 
-        modify those messages. A compromised OTrP Broker could reorder TAM messages to install an old 
-        version of a TA. Information in the manifest ensures that the OTrP Agents are 
-        protected against such downgrading attacks.</t>
-
-      <t hangText="CA Compromise"> 
-       The QueryRequest message from a TAM to the OTrP Agent may include
-        OCSP stapling data for the TAM's signer certificate and for
-        intermediate CA certificates up to the root certificate so that the OTrP Agent
-        can verify the certificate's revocation status. <vline blankLine="1">
-
-        A certificate revocation status check on a TA signer certificate is
-        OPTIONAL by an OTrP Agent. A TAM is responsible for vetting a TA and 
-        before distributing them to OTrP Agents. The OTrP Agents will
-        trust a TA signer certificate's validation status done by a TAM. </t>
- 
-      <t hangText="CA Compromise"> 
-
-        The CA issuing certificates to a TAM or an SP may get compromised. 
-        A compromised
-        intermediate CA certificates can be detected by an OTrP Agent by using
-        OCSP information, assuming the revocation information is available. 
-        Additionally, it is RECOMMENDED to provide a way to update the trust 
-        anchor store used by the device, for example using a firmware update 
-        mechanism. <vline blankLine="1">
-        
-        If the CA issuing certificates to devices gets compromised then 
-        these devices might be rejected by a TAM, if revocation is available to the 
-        TAM.
-        </t>
-
-        <t hangTex="Compromised TAM">
-        The OTrP Agent SHOULD use OCSP information to verify the validity of the TAM-provided 
-        certificate (as well as the validity of intermediate CA certificates). The integrity 
-        and the accuracy of the clock within the TEE
-        determines the ability to determine an expired or revoked certificate since OCSP 
-        stapling includes signature
-        generation time, certificate validity dates are compared to the current
-        time.</t>
-
-        </list> 
-        </t> 
-
-    </section> <!-- Security Consideration -->
-
-  
-
   </middle>
 
   <back>
@@ -739,7 +760,6 @@ Error = (
      &RFC3629;
      &RFC5198;
      &RFC7049;
-     &RFC8126;
      &I-D.ietf-rats-eat; 
     </references> <!-- Normative References --> 
 
@@ -747,6 +767,7 @@ Error = (
 
       &I-D.ietf-teep-architecture;
       &I-D.ietf-cbor-cddl; 
+     &RFC8126;
   
     </references> <!-- Informative References --> 
 
