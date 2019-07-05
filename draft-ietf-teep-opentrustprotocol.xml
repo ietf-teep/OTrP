@@ -139,489 +139,96 @@
     </section>
 
 
-    <section anchor="messages" title="OTrP Messages">
-      <t>The main OTrP component is the set of standard JSON messages
-        created by a TAM to deliver device SD and TA management commands to a
-        device, and device attestation and response messages created by TEE to
-        respond to TAM OTrP Messages.
+    <section anchor="messages" title="OTrP Message Overview">
+      <t>OTrP consists of a couple of messages exchanged between a TAM and an OTrP Agent via an OTrP Broker. 
+      The messages are encoded either in JSON or CBOR and designed to provide end-to-end security. 
+      OTrP messages are signed and/or encrypted by the endpoints, i.e., TAM and OTrP Agent, but trusted 
+      applications may as well be encrypted and signed by the service provider. OTrP not only re-uses 
+      JSON and CBOR but also the respective security wrappers, namely JOSE (JWS <xref target="RFC7515"/>
+          and JWE <xref target="RFC7516"/>, to be more specific) and COSE. Furthermore, 
+      for attestation the Entity Attestation Token (EAT) and for software updates the SUIT 
+      manifest format is re-used.
       </t>
-      <t>
-        An OTrP Message is designed to provide end-to-end security. It is always
-        signed by its creator. In addition, an OTrP Message is typically
-        encrypted such that only the targeted device TEE or TAM is able
-        to decrypt and view the actual content.
-      </t>
-      <section anchor="format" title="Message Format">
-        <t>OTrP Messages use the JSON format for JSON's simple readability and
-          moderate data size in comparison with alternative TLV and XML
-          formats. More compact CBOR format may be used as an alternative
-          choice.
-        </t>
+
+
         <t>
-          JSON Message security has developed JSON Web Signing and JSON Web
-          Encryption
-          standard in the IETF Workgroup JOSE, see JWS <xref target="RFC7515"/>
-          and JWE <xref target="RFC7516"/>.
-          The OTrP Messages in this protocol will leverage the basic JWS and JWE
-          to handle JSON signing and encryption.
-        </t>
-      </section>
+          This specification defines six messages. 
+</t> 
 
-      <section anchor="convention" title="Message Naming Convention">
-        <t>For each TAM command "xyz"", OTrP use the following naming
-          convention to represent its raw message content and complete request
-          and response messages:
-        </t>
-        <texttable>
-          <ttcol align="left">Purpose</ttcol>
-          <ttcol align="left">Message Name</ttcol>
-          <ttcol align="left">Example</ttcol>
+<t>
+          
+          A TAM queries a device's current state with a QueryRequest message. 
+          An OTrP Agent will, after authenticating and authorizing the request, report 
+          attestation information, list all TAs, and provide information about supported 
+          algorithms and extensions in a QueryResponse message. An error message is returned if the request 
+          could not be processed. A TAM will process the QueryResponse message and determine 
+          whether subsequent message exchanges to install, update, or delete trusted applications 
+          shall be initiated. 
+          
+          <figure>
+            <artwork><![CDATA[          
+  +------------+           +-------------+
+  | TAM        |           |OTrP Agent   |
+  +------------+           +-------------+
 
-          <c>Request to be signed</c>
-          <c>xyzTBSRequest</c>
-          <c>CreateSDTBSRequest</c>
+    QueryRequest ------->
 
-          <c>Request message</c>
-          <c>xyzRequest</c>
-          <c>CreateSDRequest</c>
+                           QueryResponse
 
-          <c>Response to be signed</c>
-          <c>xyzTBSResponse</c>
-          <c>CreateSDTBSResponse</c>
+                 <-------     or
 
-          <c>Response message</c>
-          <c>xyzResponse</c>
-          <c>CreateSDResponse</c>
-        </texttable>
-
-      </section>
-
-      <section anchor="template" title="Request and Response Message Template">
-        <figure>
-          <preamble>An OTrP Request message uses the following format:
-          </preamble>
-
-          <artwork><![CDATA[
-  {
-    "<name>TBSRequest": {
-      <request message content>
-    }
-  }
+                             Error
            ]]></artwork>
-        </figure>
+          </figure>
+</t> 
 
-        <figure>
-          <preamble>A corresponding OTrP Response message will be as follows.
-          </preamble>
+<t>
+With the TrustedAppInstall message a TAM can instruct an OTrP Agent to install a TA. 
+The OTrP Agent will process the message, determine whether the TAM is authorized and whether the 
+TA has been signed by an authorized SP. In addition to the binary, the TAM may also provide 
+personalization data. If the TrustedAppInstall message was processed successfully then a 
+Success message is returned to the TAM, an Error message otherwise. 
 
-          <artwork><![CDATA[
-  {
-    "<name>TBSResponse": {
-      <response message content>
-    }
-  }
+          <figure>
+            <artwork><![CDATA[                    
+ +------------+           +-------------+
+ | TAM        |           |OTrP Agent   |
+ +------------+           +-------------+
+
+   TrustedAppInstall ---->
+
+                            Success
+
+                    <----    or
+
+                            Error
            ]]></artwork>
-        </figure>
+          </figure>
+</t> 
 
-      </section>
+<t>With the TrustedAppDelete message a TAM can instruct an OTrP Agent to delete one or multiple TA(s). 
+A Success message is returned when the operation has been completed successfully, and an Error message
+otherwise. 
 
-      <section anchor="signedmsg" title="Signed Request and Response Message Structure">
-        <t>
-          A signed request message will generally include only one signature,
-          and uses the flattened JWS JSON Serialization Syntax, see Section
-          7.2.2 in <xref target="RFC7515"/>.
-        </t>
-        <figure>
-          <preamble>A general JWS object looks like the following.
-          </preamble>
+          <figure>
+            <artwork><![CDATA[          
+ +------------+           +-------------+
+ | TAM        |           |OTrP Agent   |
+ +------------+           +-------------+
 
-          <artwork><![CDATA[
-{
-  "payload": "<payload contents>",
-  "protected": "<integrity-protected header contents>",
-  "header": {
-    <non-integrity-protected header contents>,
-  },
-  "signature": "<signature contents>"
-}
+   TrustedAppDelete  ---->
+
+                            Success
+
+                    <----    or
+
+                            Error
            ]]></artwork>
-        </figure>
+          </figure>
+</t>
 
-        <t>OTrP signed messages only require the signing algorithm as the
-          mandate header in the property "protected". The
-          "non-integrity-protected header contents" is optional.
-        </t>
-        <t>
-          OTrP signed message will be given an explicit Request or Response
-          property
-          name. In other words, a signed Request or Response uses the
-          following
-          template.
-        </t>
-        <figure>
-          <preamble>A general JWS object looks like the following.
-          </preamble>
-
-          <artwork><![CDATA[
-{
-  "<name>[Request | Response]": {
-    <JWS Message of <name>TBS[Request | Response]
-  }
-}
-           ]]></artwork>
-        </figure>
-
-        <t>With the standard JWS message format, a signed OTrP Message looks
-          like the following.
-        </t>
-        <figure>
-          <artwork><![CDATA[
-{
-  "<name>[Request | Response]": {
-    "payload": "<payload contents of <name>TBS[Request | Response]>",
-    "protected": "<integrity-protected header contents>",
-    "header":  <non-integrity-protected header contents>,
-    "signature": "<signature contents>"
-  }
-}
-           ]]></artwork>
-        </figure>
-
-        <t>
-          The top element "&lt;name&gt;[Signed][Request|Response]" cannot be
-          fully trusted to match the content because it doesn't participate
-          in the signature generation. However, a recipient can always match
-          it with the value associated with the property "payload". It
-          purely serves to provide a quick reference for reading and
-          method invocation.
-        </t>
-        <t>Furthermore, most properties in an unsigned OTrP messages are
-          encrypted to provide end-to-end confidentiality. The only OTrP message
-          that isn't encrypted is the initial device query message that asks
-          for the device state information.
-        </t>
-        <t>Thus a typical OTrP Message consists of an encrypted and then signed
-          JSON message. Some transaction data such as transaction ID and TEE
-          information may need to be exposed to the OTrP Broker for routing
-          purpose. Such information is excluded from JSON encryption.
-          The device's signer certificate itself is encrypted. The overall
-          final message is a standard signed JSON message.
-        </t>
-        <t>As required by JSW/JWE, those JWE and JWS related elements will be
-          BASE64URL encoded. Other binary data elements specific to the OTrP
-          specification are BASE64-encoded. This specification indicates
-          elements that should be BASE64 and those elements that are to be
-          BASE64URL encoded.
-        </t>
-
-        <section
-          title="Identifying Signing and Encryption Keys for JWS/JWE Messaging">
-          <t>
-            JWS and JWE messaging allow various options for identifying the
-            signing and encryption keys, for example, it allows optional
-            elements including "x5c", "x5t" and "kid" in the header to cover
-            various possibilities.
-          </t>
-          <t>
-            To protect privacy, it is important that the device's
-            certificate is released only to a trusted TAM, and that it is
-            encrypted. The TAM will need to know the device certificate, but
-            untrusted parties must not be able to get the device certificate.
-            All OTrP messaging conversations between a TAM and device begin
-            with GetDeviceStateRequest / GetDeviceStateResponse. These messages
-            have elements built into them to exchange signing certificates,
-            described in the section <xref target="detailmsg"/>. Any
-            subsequent messages in the conversation that follow on from this
-            implicitly use the same certificates for signing/encryption,
-            and as a result the certificates or references
-            may be omitted in those subsequent messages.
-          </t>
-          <t>
-            In other words, the signing key identifier in the use of JWS and
-            JWE here may be absent in the subsequent messages after the
-            initial GetDeviceState query.
-          </t>
-          <t>
-            This has an implication on the TEE and TAM implementation: they
-            have to cache the signer certificates for the subsequent
-            message signature validation in the session. It may be easier
-            for a TAM service to cache transaction session information
-            but not so for a TEE in a device. A TAM can get a
-            device's capability by checking the response message from a TEE
-            to decide whether it should include its TAM signer certificate
-            and OCSP data in each subsequent request message. The device's
-            caching capability is reported
-            in GetDeviceStateResponse signerreq parameter.
-          </t>
-        </section>
-      </section>
-
-      <section title="JSON Signing and Encryption Algorithms">
-        <t>
-          The OTrP JSON signing algorithm shall use SHA256 or a stronger
-          hash method with respective key type. JSON Web Algorithm RS256
-          or ES256 <xref target="RFC7518"/> SHALL be used for RSA with SHA256 and
-          ECDSA with SHA256. If RSA with SHA256 is used, the JSON web
-          algorithm representation is as follows.
-        </t>
-
-        <t>
-          <list hangIndent="4" style="empty">
-            <t>{"alg":"RS256"}</t>
-          </list>
-        </t>
-
-        <t>
-          The (BASE64URL encoded) "protected" header property in a signed
-          message looks like the following:
-          <list hangIndent="4" style="empty">
-            <t>"protected":"eyJhbGciOiJSUzI1NiJ9"</t>
-          </list>
-        </t>
-
-        <t>
-          If ECSDA with P-256 curve and SHA256 are used for signing, the JSON
-          signing algorithm representation is as follows.
-
-          <list hangIndent="4" style="empty">
-            <t>{"alg":"ES256"}</t>
-          </list>
-        </t>
-
-        <t>
-          The value for the "protected" field will be the following.
-          <list hangIndent="4" style="empty">
-            <t>eyJhbGciOiJFUzI1NiJ9</t>
-          </list>
-        </t>
-
-        <figure>
-          <preamble>Thus, a common OTrP signed message with ES256 looks like the
-            following.
-          </preamble>
-          <artwork><![CDATA[
-  {
-    "payload": "<payload contents>",
-    "protected": "eyJhbGciOiJFUzI1NiJ9",
-    "signature": "<signature contents>"
-  }
-           ]]></artwork>
-        </figure>
-
-        <t>The OTrP JSON message encryption algorithm SHOULD use one of the
-          supported algorithms defined in the later chapter of this document.
-          JSON encryption uses a symmetric key as its "Content Encryption Key
-          (CEK)". This CEK is encrypted or wrapped by a recipient's key.
-          The OTrP recipient typically has an asymmetric key pair. Therefore,
-          the CEK will be encrypted by the recipient's public key.
-        </t>
-
-        <t>
-          A compliant implementation shall support the following symmetric
-          encryption algorithm and anticipate future new algorithms.
-          <list hangIndent="4" style="empty">
-            <t>{"enc":"A128CBC-HS256"}</t>
-          </list>
-        </t>
-
-        <t>
-          This algorithm represents encryption with AES 128 in CBC mode with
-          HMAC SHA 256 for integrity. The value of the property "protected" in
-          a JWE message will be
-          <list hangIndent="4" style="empty">
-            <t>eyJlbmMiOiJBMTI4Q0JDLUhTMjU2In0</t>
-          </list>
-        </t>
-
-        <figure>
-          <preamble>An encrypted JSON message looks like the following.
-          </preamble>
-
-          <artwork><![CDATA[
-  {
-    "protected": "eyJlbmMiOiJBMTI4Q0JDLUhTMjU2In0",
-     "recipients": [
-        {
-            "header": {
-                "alg": "<RSA1_5 etc.>"
-            },
-            "encrypted_key": "<encrypted value of CEK>"
-        }
-    ],
-    "iv": "<BASE64URL encoded IV data>",
-    "ciphertext": "<Encrypted data over the JSON plaintext
-                   (BASE64URL)>",
-    "tag": "<JWE authentication tag (BASE64URL)>"
-  }
-           ]]></artwork>
-        </figure>
-
-        <t>OTrP doesn't use JWE AAD (Additional Authenticated Data) because
-          each message is always signed after the message is encrypted.
-        </t>
-
-        <section anchor="signalgs" title="Supported JSON Signing Algorithms">
-          <t>
-            The following JSON signature algorithm is mandatory support in
-            the TEE and TAM:
-            <list hangIndent="4" style="symbols">
-              <t>RS256</t>
-            </list>
-          </t>
-          <t>ES256 is optional to support.
-          </t>
-        </section>
-
-        <section anchor="encalgs" title="Support JSON Encryption Algorithms">
-          <t>
-            The following JSON authenticated encryption algorithm is mandatory
-            support in TEE and TAM.
-            <list hangIndent="4" style="symbols">
-              <t>A128CBC-HS256</t>
-
-            </list>
-          </t>
-              <t>A256CBC-HS512 is optional to support.</t>
-        </section>
-
-        <section anchor="kmalgs" title="Supported JSON Key Management Algorithms">
-          <t>
-            The following JSON key management algorithm is mandatory
-            support in TEE and TAM.
-            <list hangIndent="4" style="symbols">
-              <t>RSA1_5</t>
-            </list>
-          </t>
-
-          <t>ECDH-ES+A128KW and ECDH-ES+A256KW are optional to support.</t>
-        </section>
-
-      </section>
-
-      <section anchor="commerr" title="Common Errors">
-        <t>
-          An OTrP Response message typically needs to report the operation
-          status and error causes if an operation fails. The following JSON
-          message elements should be used across all OTrP Messages.
-        </t>
-
-        <figure>
-          <artwork><![CDATA[
-"status": "pass | fail"
-
- "reason": {
-     "error-code": "<error code if there is any>",
-     "error-message": "<error message>"
-  }
-
-"ver": "<version string>"
-           ]]></artwork>
-        </figure>
-
-      </section>
-
-      <section title="OTrP Message List">
-        <t>
-          The following table lists the OTrP commands and therefore
-          corresponding Request and Response messages defined in this
-          specification. Additional messages may be added in the future
-          when new task messages are needed.
-        </t>
-        <t>
-          <list hangIndent="4" style="hanging">
-            <t hangText="GetDeviceState - ">
-              <vspace blankLines="0" />
-              A TAM queries a device's current state with a message
-              GetDeviceStateRequest. A device TEE will report its
-              version, its FW version, and list of all SDs and TAs in the
-              device that is managed by the requesting TAM. TAM may
-              determine whether the device is trustworthy and decide to
-              carry out additional commands according to the response
-              from this query.
-            </t>
-            <t hangText="CreateSD - ">
-              <vspace blankLines="0" />
-              A TAM instructs a device TEE to create an SD for an SP. The
-              recipient TEE will check whether the requesting TAM is
-              trustworthy.
-            </t>
-            <t hangText="UpdateSD - ">
-              <vspace blankLines="0" />
-              A TAM instructs a device TEE to update an existing SD. A
-              typical update need comes from SP certificate change, TAM
-              certificate change and so on. The recipient TEE will verify
-              whether the TAM is trustworthy and owns the SD.
-            </t>
-            <t hangText="DeleteSD - ">
-              <vspace blankLines="0" />
-              A TAM instructs a device TEE to delete an existing SD. A
-              TEE conditionally deletes TAs loaded in the SD according to
-              a request parameter. An SD cannot be deleted until all TAs
-              in this SD are deleted. If this is the last SD for an SP,
-              TEE MAY also delete TEE SP AIK key for this SP.
-            </t>
-            <t hangText="InstallTA - ">
-              <vspace blankLines="0" />
-              A TAM instructs a device to install a TA into an SD for a
-              SP. The TEE in a device will check whether the TAM and TA are
-              trustworthy.
-            </t>
-            <t hangText="UpdateTA - ">
-              <vspace blankLines="0" />
-              A TAM instructs a device to update a TA into an SD for an SP.
-              The change may commonly be bug fix for a previously
-              installed TA.
-            </t>
-            <t hangText="DeleteTA - ">
-              <vspace blankLines="0" />
-              A TAM instructs a device to delete a TA. The TEE in a device
-              will check whether the TAM and TA are trustworthy.
-            </t>
-          </list>
-        </t>
-      </section>
-
-      <section title="OTrP Request Message Routing Rules">
-        <t>
-          For each command that a TAM wants to send to a device, the TAM
-          generates a request message. This is typically triggered by a
-          Client Application that uses the TAM. The Client Application
-          initiates contact with the TAM and receives TAM OTrP Request
-          messages according to the TAM's implementation. The Client
-          Application forwards the OTrP message to an OTrP Broker in the
-          device, which in turn sends the message to the active TEE in
-          the device.
-        </t>
-        <t>The current version of this specification assumes that each device has
-          only one active TEE, and the OTrP Broker is responsible to connect to
-          the active TEE. This is the case today with devices in the market.
-        </t>
-        <t>When the TEE responds to a request, the OTrP Broker gets the OTrP
-          response messages back to the Client Application that sent the
-          request. In case the target TEE fails to respond to the request, the
-          OTrP Broker will be responsible to generate an error message to reply
-          the Client Application. The Client Application forwards any data it
-          received to its TAM.
-        </t>
-
-        <section title="SP Anonymous Attestation Key (SP AIK)">
-          <t>When the first new Security Domain is created in a TEE for an SP,
-            a new key pair is generated and associated with this SP. This
-            key pair is used for future device attestation to the service
-            provider instead of using the device's TEE key pair.
-          </t>
-        </section>
-      </section>
     </section>
 
-    <section anchor="transport" title="Transport Protocol Support">
-      <t>The OTrP message exchange between a TEE device and TAM generally
-        takes place between a Client Application in REE and TAM. A device that
-        is capable to run a TEE and PKI based cryptographic attestation isn't
-        generally resource constraint to carry out standard HTTPS connections.
-        A compliant device and TAM SHOULD support HTTPs.
-      </t>
-    </section>
 
     <section anchor="detailmsg" title="Detailed Messages Specification">
       <t>For each message in the following sections all JSON elements are
